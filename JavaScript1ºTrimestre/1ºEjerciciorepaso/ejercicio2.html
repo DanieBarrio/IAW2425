@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tus datos</title>
+</head>
+<body>
+    <input type="text" id="cantidad" placeholder="Introduce datos">
+    <button id="1" onclick="convertir('3')">Convertir a dolares</button>
+    <button id="2" onclick="convertir('4')">Convertir a euro</button>
+    <p id="resultado"> Resultado </p>
+
+    <Script>
+        function convertir(id){
+            let cantidad = parseFloat(document.getElementById("cantidad").value)
+            if (id=='3')
+            cantidad = cantidad * 1.09;
+            else 
+            cantidad = cantidad * 0.92;
+
+            document.getElementById("resultado").innerHTML = cantidad ;
+        }
+        
+
+    </Script>
+</body>
+</html>
