@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Letra DNI</title>
+</head>
+<body>
+    <input type="text" id="dni" placeholder="Introduce tu DNI sin la letra">
+    <button onclick="calcularLetra()">Calcular Letra</button>
+    <p id="resultado"></p>
+    <script>
+        function calcularLetra() {
+            let dni = document.getElementById("dni").value;
+            if (/^\d{8}$/.test(dni)) { 
+                let letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+                let indice = parseInt(dni) % 23;
+                let letra = letras.charAt(indice);
+                document.getElementById("resultado").innerHTML = "La letra de tu DNI es: " + letra;
+            } else {
+                window.alert("Introduce un número de DNI válido (8 dígitos)");
+            }
+        }
+    </script>
+</body>
