@@ -9,19 +9,28 @@
     <input type="text" id="cantidad" placeholder="Introduce datos">
     <button id="1" onclick="convertir('3')">Convertir a dolares</button>
     <button id="2" onclick="convertir('4')">Convertir a euro</button>
-    <p id="resultado"> Resultado </p>
+    <p id="resultado"> </p>
 
     <Script>
         function convertir(id){
-            let cantidad = parseFloat(document.getElementById("cantidad").value)
-            if (id=='3')
-            cantidad = cantidad * 1.09;
-            else 
-            cantidad = cantidad * 0.92;
-
-            document.getElementById("resultado").innerHTML = cantidad ;
+            let cantidad = parseFloat(document.getElementById("cantidad").value);
+            if (isNaN(cantidad)) {
+                window.alert("Introduce un numero, porfavor")
+                document.getElementById("resultado").innerHTML = "";
+            }
+            else{
+                if (id=='3'){
+                    document.getElementById("resultado").innerHTML = cantidad + "€ a dolares es "  ;
+                    cantidad = cantidad * 1.09;
+                    document.getElementById("resultado").innerHTML += cantidad + "$" ;
+                }
+                else {
+                    document.getElementById("resultado").innerHTML = cantidad + "$ a euros es "  ;
+                    cantidad = cantidad * 0.92;
+                    document.getElementById("resultado").innerHTML +=  cantidad + "€" ;
+                }
+            }
         }
-        
 
     </Script>
 </body>
