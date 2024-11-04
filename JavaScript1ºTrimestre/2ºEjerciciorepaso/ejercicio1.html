@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de masa</title>
+</head>
+<body>
+    <input type="text" id="altura" placeholder="Introduce datos de altura (cm)"> <br>
+    <input type="text" id="peso" placeholder="Introduce datos de peso (Kg)"> <br>
+    <button onclick="conversor()">Calcular IMC</button>
+    <p id="resultado"> </p> <br>
+    <p id="IMC"></p>
+    <script>
+        function conversor(){
+            let altval = parseFloat(document.getElementById("altura").value);
+            let pesoval = parseFloat(document.getElementById("peso").value); 
+            if (isNaN(pesoval) || isNaN(altval)){
+                window.alert("Introduce un numeros validos, porfavor")
+                document.getElementById("resultado").innerHTML = "";
+            } else {
+            altval = altval/100;
+            altval = Math.pow(altval, 2);
+            let total = pesoval/altval
+            document.getElementById("resultado").innerHTML = "Tu masa corporal es de: "+ total +".";
+            if(total < 18.5)
+            document.getElementById("IMC").innerHTML = "Peso inferior al normal";
+            
+            if(total >= 18.5 && total <= 24.9)
+            document.getElementById("IMC").innerHTML = "Normal";
+            
+            if(total >= 25.0 && total <=29.9)
+            document.getElementById("IMC").innerHTML = "Peso superior al normal";
+            
+            if(total > 30)
+            document.getElementById("IMC").innerHTML = "Obesidad";
+            
+            }
+        }
+    </script>
+</body>
+</html>
