@@ -19,20 +19,24 @@
                 window.alert("Introduce un numeros validos, porfavor")
                 document.getElementById("resultado").innerHTML = "";
             } else {
+            
             altval = altval/100;
             altval = Math.pow(altval, 2);
             let total = pesoval/altval
-            document.getElementById("resultado").innerHTML = "Tu masa corporal es de: "+ total +".";
+            total = total.toFixed(2);
+            document.getElementById("resultado").innerHTML = "Tu masa corporal es de: "+ total ;
+            
+            
             if(total < 18.5)
             document.getElementById("IMC").innerHTML = "Peso inferior al normal";
             
-            if(total >= 18.5 && total <= 24.9)
+            else if( total <= 24.9)
             document.getElementById("IMC").innerHTML = "Normal";
             
-            if(total >= 25.0 && total <=29.9)
+            else if(total <=29.9)
             document.getElementById("IMC").innerHTML = "Peso superior al normal";
             
-            if(total > 30)
+            else 
             document.getElementById("IMC").innerHTML = "Obesidad";
             
             }

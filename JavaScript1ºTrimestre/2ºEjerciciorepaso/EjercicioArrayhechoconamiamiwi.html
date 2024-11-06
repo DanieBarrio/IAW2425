@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Array</title>
+</head>
+<body>
+    <input type="text" id="mensaje" placeholder="mete"> 
+    <button id="borrar" onclick="mostrados()"> Publicar</button>
+    <p id="resultado"></p>
+
+    <script>
+        
+        let contenido;
+        let miarray = [];
+        let i; 
+
+        function mostrados() {
+            contenido = document.getElementById("mensaje").value;
+            if (contenido.trim() == "" || contenido == "")
+            window.alert("Introduce un mensaje porfavor y gracias");
+            else
+            mostrar2();
+        }
+        function mostrar2(){
+            miarray.push(contenido);
+            mostrar();
+        }
+        function mostrar(){
+            
+            
+            document.getElementById("mensaje").value = ""; 
+            let resultado = document.getElementById("resultado");
+            resultado.innerHTML = "";
+            let mLen = miarray.length;
+            mLen = mLen -1
+            let texto = "<ul>";
+            for (i = mLen; i >= 0; i--) {
+                texto += "<li>" + miarray[i] +'<button onclick="borrar(' + i  +')"> Borrar </button>' +"</li>";
+            }
+            texto += "</ul>";
+            document.getElementById("resultado").innerHTML = texto;
+
+        }
+        function borrar(id){
+            miarray.splice(id, 1);
+            mostrar();
+        }
+    </script>
+</body>
+</html>
