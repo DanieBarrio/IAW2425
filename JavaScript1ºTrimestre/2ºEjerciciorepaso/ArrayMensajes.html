@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X</title>
+    <style>
+        .mensaje {
+            display: flex;
+            align-items: center;
+        }
+        .mensaje p {
+            margin: 0;
+            padding: 0 10px;
+        }
+        .papelera {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bienvenidos a X</h1>
+
+    <h3>Tus publicaciones</h3>
+    <input type="text" name="texto" id="publicacion" placeholder="Escribe aquí que tal tu día">
+    <button onclick="enviar()">Publicar</button>
+
+    <h3>Tus mensajes Almacenados (Array)</h3>
+    <div id="resultado"></div>
+
+    <script>
+        var miarray = [];
+
+        function enviar() {
+            let mensajes = document.getElementById("publicacion").value;
+            if (mensajes.trim() !== "") {
+                miarray.push(mensajes);
+                mostrarMensajes();
+                document.getElementById("publicacion").value = ""; 
+            } else {
+                alert("Por favor, escribe un mensaje antes de publicar.");
+            }
+        }
+
+        function mostrarMensajes() {
+            let resultado = document.getElementById("resultado");
+            resultado.innerHTML = "";
+            miarray.forEach((mensaje, index) => {
+                let div = document.createElement("div");
+                div.className = "mensaje";
+                
+                let p = document.createElement("p");
+                p.innerText = mensaje;
+                
+                let papelera = document.createElement("span");
+                papelera.innerHTML = "🗑️";
+                papelera.className = "papelera";
+                papelera.onclick = function() {
+                    borrarMensaje(index);
+                };
+                
+                div.appendChild(p);
+                div.appendChild(papelera);
+                
+                resultado.appendChild(div);
+            });
+        }
+
+        function borrarMensaje(index) {
+            miarray.splice(index, 1);
+            mostrarMensajes();
+        }
+    </script>
+
+</body>
+</html>

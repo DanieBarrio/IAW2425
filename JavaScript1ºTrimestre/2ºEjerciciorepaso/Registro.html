@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Registro</title>
+    <style>
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Registro de Usuario</h1>
+    <form id="registroForm" onsubmit="return validarFormulario()">
+        <label for="nombre">Nombre (requerido):</label>
+        <input type="text" id="nombre" name="nombre" required><br><br>
+        
+        <label for="apellido">Apellido (requerido):</label>
+        <input type="text" id="apellido" name="apellido" required><br><br>
+        
+        <label for="email">Correo Electrónico (requerido):</label>
+        <input type="email" id="email" name="email" required><br><br>
+        
+        <label for="direccion">Dirección:</label>
+        <input type="text" id="direccion" name="direccion"><br><br>
+        
+        <label for="ciudad">Ciudad:</label>
+        <input type="text" id="ciudad" name="ciudad"><br><br>
+        
+        <label for="telefono">Teléfono:</label>
+        <input type="tel" id="telefono" name="telefono"><br><br>
+        
+        <label for="dni">DNI (requerido):</label>
+        <input type="text" id="dni" name="dni" required><br><br>
+        
+        <label for="pin">PIN (requerido, 8 dígitos):</label>
+        <input type="password" id="pin" name="pin" required><br><br>
+        
+        <label for="pinRepetido">Repite el PIN (requerido, 8 dígitos):</label>
+        <input type="password" id="pinRepetido" name="pinRepetido" required><br><br>
+        
+        <button type="submit">Registrar</button>
+    </form>
+
+    <div id="mensajeError" class="error"></div>
+    <div id="mensajeExito"></div>
+
+    <script>
+        function validarFormulario() {
+            let nombre = document.getElementById("nombre").value;
+            let apellido = document.getElementById("apellido").value;
+            let email = document.getElementById("email").value;
+            let dni = document.getElementById("dni").value;
+            let pin = document.getElementById("pin").value;
+            let pinRepetido = document.getElementById("pinRepetido").value;
+            let telefono = document.getElementById("telefono").value;
+
+            let mensajeError = "";
+
+            // Validación del DNI
+            if (!/^\d{8}[A-Za-z]$/.test(dni)) {
+                mensajeError += "El DNI no es válido. Debe tener 8 dígitos y una letra.<br>";
+            }
+
+            // Validación del PIN
+            if (pin.length !== 8 || !/^\d+$/.test(pin)) {
+                mensajeError += "El PIN debe tener exactamente 8 dígitos.<br>";
+            }
+
+            // Validación del PIN repetido
+            if (pin !== pinRepetido) {
+                mensajeError += "Los PINs no coinciden.<br>";
+            }
+
+            if (mensajeError) {
+                document.getElementById("mensajeError").innerHTML = mensajeError;
+                return false;
+            }
+
+            // Generar nombre de usuario
+            let nombreUsuario = nombre.substring(0, 2) + apellido.substring(0, 2) + telefono.slice(-3);
+            document.getElementById("mensajeExito").innerHTML = "Usuario creado: " + nombreUsuario;
+
+            return false; // Evitar envío del formulario para demostración
+        }
+    </script>
+</body>
+</html>
