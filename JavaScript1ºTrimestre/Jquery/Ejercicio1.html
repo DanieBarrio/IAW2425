@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jquery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Titulo</h1>
+    <p>Contenido lorem</p>
+    <button id="ocultar">Mostrar</button>
+    <button id="mostar">Ocultar</button>
+    <script>
+        $(document).ready(function () {
+            $("#ocultar").click(function(){
+                $("p").hide(1000);
+            })
+            $("#mostar").click(function(){
+                $("p").show(1000);
+                $("p").toggle();
+            })
+
+
+        });
+        
+    </script>
+    
+</body>
+</html>
