@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Placeholder</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+</head>
+<body>
+    <button id="boton">Pulsa</button>
+    <div id="resultados"> </div>
+    <script>
+        $(function () {
+            $("#boton").click(function (e) {
+                $.get("https://jsonplaceholder.typicode.com/photos").done(function (r) {
+                    console.log(r);
+                    let num_productos = r.length;
+                    $("#resultados").empty();
+                    for (let i = 0; i < num_productos; i++) {
+                        let titulo = r[i].title;
+                        
+                        let cuerpo = r[i].body;
+                                      
+                        $('#resultados').append(
+                            
+                            '<h1 class="Titulo">Título: ' + titulo + '</h1>' +
+                            '<p class="Cuerpo">Cuerpo: ' + cuerpo + '</p>'+'<br>' );
+                    }
+                }).fail( function (){
+                    alert("Error cargando datos del servidor");
+                    }
+                );
+        })});
+    </script>
+    <style>
+        h1 {
+            background-color: lightcoral;
+        }
+        p {
+            background-color: brown;
+        }
+        body{
+            background-color: pink;
+        }
+        
+    </style>
+</body>
+</html>
