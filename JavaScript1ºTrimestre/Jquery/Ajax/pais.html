@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paises</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+</head>
+<body>
+     <input type="text" id="pais" placeholder="Introduce pais en inglis">
+     <button id="boton" >Pulsa</button>
+     <div id="resultados"></div>
+    <script>
+        $(function () {
+            $("#boton").click(function (e) {
+                $.get("https://restcountries.com/v3.1/name/" + $("#pais").val()).done(function (respuesta) {
+                    console.log(respuesta);
+                    
+                    let nombre = respuesta[0].translations.spa.common;
+                    let capital = respuesta[0].capital;
+                    let population = respuesta[0].population;
+                    let bandera = respuesta[0].flags.png;
+                    $("#resultados").empty();
+                    $('#resultados').append(
+                        '<p>' + '<img width="120" src="' + bandera + '"></p>' +
+                        '<p>Pais: ' + nombre + '</p>' +
+                        '<p>Capital: ' + capital+ '</p>' +
+                        '<p>Poblacion: ' + population + '</p>');
+                }).fail(function (respuesta) {
+                    alert("Error cargando datos del servidor");
+                });
+            })
+        });
+    </script>
+</body>
+</html>

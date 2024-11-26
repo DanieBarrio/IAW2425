@@ -19,12 +19,12 @@
                     for (let i = 0; i < num_productos; i++) {
                         let titulo = r[i].title;
                         
-                        let cuerpo = r[i].body;
+                        let cuerpo = r[i].thumbnailUrl;
                                       
                         $('#resultados').append(
                             
                             '<h1 class="Titulo">Título: ' + titulo + '</h1>' +
-                            '<p class="Cuerpo">Cuerpo: ' + cuerpo + '</p>'+'<br>' );
+                            '<img src="'+cuerpo+'" alt="'+cuerpo+'">'+'<br>' );
                     }
                 }).fail( function (){
                     alert("Error cargando datos del servidor");
