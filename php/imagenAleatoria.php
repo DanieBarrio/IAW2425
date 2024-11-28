@@ -7,13 +7,13 @@
 </head>
 <body>
 <?php
-
+#Me ha dado pereza meter imagenes 
 $imagenes = array(
     '1.png',
     '2.png',
-    '3.png',
+    'tres.png',
     '4.png',
-    '5.png'
+    'siete.png'
 );
 echo "<img src='".$imagenes[rand(0, 4)]."'"; 
 ?>
