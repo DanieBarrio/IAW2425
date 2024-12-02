@@ -15,7 +15,7 @@ $imagenes = array(
     '4.png',
     'siete.png'
 );
-echo "<img src='".$imagenes[rand(0, 4)]."'"; 
+echo "<img src='".$imagenes[rand(0, count($imagenes)-1)]."'"; 
 ?>
     
     

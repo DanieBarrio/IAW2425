@@ -10,10 +10,12 @@
     $archivos = array_diff(scandir('.'), ['.', '..']);
     echo "<ul>";
     foreach ($archivos as $archivo) {
-        echo "<li><a href=\"$archivo\" target=\"_blank\">$archivo</a></li>";
+        $fechaModificacion = date("F d Y H:i:s", filemtime($archivo));
+        echo "<li><h3>$archivo</h3><a href=\"$archivo\" target=\"_blank\">$fechaModificacion</a></li>";
     }
     echo "</ul>";
     ?>
 </body>
 </html>
+
 
