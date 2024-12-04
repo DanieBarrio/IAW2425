@@ -64,10 +64,13 @@ $files = scandir($directory);
                 $fileType = is_dir($filePath) ? "Carpeta" : "Archivo";
                 $fileSize = is_file($filePath) ? filesize($filePath) . " bytes" : "-";
                 $fileModTime = date("Y-m-d H:i:s", filemtime($filePath));
+
+                // Redirigir 'index.php' a la URL específica
+                $link = $file === "index.php" ? "http://192.168.2.113:8081/index.php" : htmlspecialchars($file);
                 ?>
                 <tr>
                     <td>
-                        <a href="<?php echo htmlspecialchars($file); ?>" target="_blank">
+                        <a href="<?php echo $link; ?>" target="_blank">
                             <?php echo htmlspecialchars($file); ?>
                         </a>
                     </td>
@@ -82,3 +85,4 @@ $files = scandir($directory);
     </table>
 </body>
 </html>
+
