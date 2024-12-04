@@ -16,7 +16,7 @@
     <script>
         $(document).ready(function () {
             $("#btn-ver").click(function(e){
-                let pokemon = $("#pokemon").val();
+                let pokemon = $("#pokemon").val().toLowerCase();
             $.get("https://pokeapi.co/api/v2/pokemon/"+ pokemon).done(function(r){
                 console.log(r);
                     let num_post = r.length;
@@ -25,11 +25,13 @@
                         let abilidad1 = r.abilities[1].ability.name;
                         let juego = r.height;
                         let tipo = r.types[0].type.name;
+                        let foto = r.sprites.front_default;
                         $('#resultados').append(
                             '<p>Nombre: ' + nombre + '</p>' +
                             '<p>Abilidad: ' + abilidad1 + '</p>' +
                             '<p>Tamaño: ' + juego + '</p>' +
-                            '<p>Tipo: ' + tipo + '</p>');
+                            '<p>Tipo: ' + tipo + '</p>'+
+                            '<p>' + '<img width="120" src="' + foto + '"></p>');
                             
                     
             });
