@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Energia cinetica</title>
+</head>
+<body>
+    <input type="text" id="masa" placeholder="Introduce masa(kg)"> <br>
+    <input type="text" id="velocidad" placeholder="Introduce velocidad(metros/segundo)"> <br>
+    <button onclick="conversor()">Calcular Energia cinetica</button>
+    <p id="Joules"></p>
+    <script>
+        function conversor(){
+            let masa = parseFloat(document.getElementById("masa").value);
+            let velocidad = parseFloat(document.getElementById("velocidad").value); 
+            if (isNaN(velocidad) || isNaN(masa)){
+                window.alert("Introduce un numeros validos, porfavor")
+              
+                document.getElementById("Joules").innerHTML = "";
+            } else {
+            
+            masa = masa/2;
+            volumen = Math.pow(velocidad, 2);
+            let total = masa * velocidad;
+            total = total.toFixed(2);
+          
+            
+            if(total < 10)
+            document.getElementById("Joules").innerHTML = "La enegia cinetica es baja: "+ total+ " Joules";
+            
+            else if( total <= 100)
+            document.getElementById("Joules").innerHTML = "La enegia cinetica es moderada: "+ total + " Joules";
+            
+            else if(total >=100)
+            document.getElementById("Joules").innerHTML = "La enegia cinetica es alta: "+ total+ " Joules";
+            
+          
+        }}
+    </script>
+</body>
+</html>
