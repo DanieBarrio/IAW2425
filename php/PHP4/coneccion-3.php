@@ -2,7 +2,7 @@
 
 $servername = "sql308.thsite.top";
 $username = "thsi_38097478";
-$password = "puteros";
+$password = "putos";
 
 
 
