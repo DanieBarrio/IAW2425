@@ -1,8 +1,8 @@
 <?php
-$servername = "sql308.thsite.top";
-$username = "thsi_38097478";
-$password = "putos";
-$db="thsi_38097478_coneccion";
+$servername = "";
+$username = "";
+$password = "";
+$db="";
 
 
 // Create connection
