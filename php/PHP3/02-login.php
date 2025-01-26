@@ -7,7 +7,7 @@
 </head>
 <body>
 
-<h1>Sistema de autenticación</h1>
+<h1>Sistema de autenticación </h1>
 <form action="02-login.php" method="POST">
 
     <input type="text" name="usuario" placeholder="Usuario">
