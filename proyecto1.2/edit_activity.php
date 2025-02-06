@@ -2,32 +2,43 @@
 session_start();
 require 'db.php';
 
-// Verificar si el usuario está autenticado
-if (!isset($_SESSION['user'])) {
-    header("Location: login.php");
+// Solo permitir administradores
+if (!isset($_SESSION['user']) || $_SESSION['rol'] !== 'ad') {
+    header("Location: index.php");
     exit;
 }
 
 $conn = conectar();
 
-// Obtener departamentos, tipos y horas disponibles
-$departamentos = $conn->query("SELECT * FROM departamento");
-$tipos = $conn->query("SELECT * FROM tipo");
-$horas = $conn->query("SELECT * FROM horas ORDER BY hora");
+// Obtener ID de la actividad
+$actividad_id = (int)$_GET['id'];
 
-$error = '';
-$selected_departamento_id = null;
-
-// Función para obtener profesores por departamento
-function getProfesoresByDepartamento($conn, $departamento_id) {
-    $stmt = $conn->prepare("SELECT id, nombre FROM profesores WHERE id_departamento = ?");
-    $stmt->bind_param("i", $departamento_id);
+try {
+    // Verificar si la actividad existe
+    $stmt = $conn->prepare("SELECT * FROM actividades WHERE id = ?");
+    $stmt->bind_param("i", $actividad_id);
     $stmt->execute();
-    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $result = $stmt->get_result();
+    $actividad = $result->fetch_assoc();
+    if (!$actividad) {
+        throw new Exception("Actividad no encontrada");
+    }
+
+    // Obtener acompañantes actuales
+    $stmt_acomp = $conn->prepare("SELECT profesor_id FROM acompanante WHERE actividad_id = ?");
+    $stmt_acomp->bind_param("i", $actividad_id);
+    $stmt_acomp->execute();
+    $result_acomp = $stmt_acomp->get_result();
+    $acompanantes_actuales = [];
+    while ($row = $result_acomp->fetch_assoc()) {
+        $acompanantes_actuales[] = $row['profesor_id'];
+    }
+} catch (Exception $e) {
+    $error = $e->getMessage();
 }
 
-// Procesar el formulario si se envió
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+// Procesar actualización si se envió el formulario
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($actividad_id)) {
     try {
         $conn->begin_transaction();
 
@@ -76,65 +87,93 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             throw new Exception("La hora final debe ser posterior a la hora inicial en el mismo día");
         }
 
-        // Validación de acompañantes
+        // Validación del profesor responsable
         $profesor_responsable = (int)$_POST['profesor_id'];
-        $acompanantes = isset($_POST['acompanantes']) ? array_map('intval', $_POST['acompanantes']) : [];
-        if (in_array($profesor_responsable, $acompanantes)) {
-            throw new Exception("El responsable no puede ser acompañante");
+        $departamento_id = (int)$_POST['departamento_id'];
+        $stmt_check_profesor = $conn->prepare("SELECT id FROM profesores WHERE id = ? AND id_departamento = ?");
+        $stmt_check_profesor->bind_param("ii", $profesor_responsable, $departamento_id);
+        $stmt_check_profesor->execute();
+        if (!$stmt_check_profesor->get_result()->num_rows) {
+            throw new Exception("El profesor responsable no pertenece al departamento seleccionado");
         }
 
-        // Insertar actividad principal
-        $stmt = $conn->prepare("INSERT INTO actividades (
-            titulo, tipo_id, departamento_id, profesor_id,
-            fecha_inicio, fecha_fin, hora_inicio_id, hora_fin_id,
-            coste, total_alumnos, objetivo
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param(
-            "siiissiidsi",
+        // Actualizar actividad
+        $stmt_update = $conn->prepare("UPDATE actividades SET
+            titulo = ?,
+            tipo_id = ?,
+            departamento_id = ?,
+            profesor_id = ?,
+            fecha_inicio = ?,
+            fecha_fin = ?,
+            hora_inicio_id = ?,
+            hora_fin_id = ?,
+            coste = ?,
+            total_alumnos = ?,
+            objetivo = ?
+        WHERE id = ?");
+        $stmt_update->bind_param(
+            "siiissiidsii",
             $_POST['titulo'],
             $_POST['tipo_id'],
-            $_POST['departamento_id'],
-            $_POST['profesor_id'],
+            $departamento_id,
+            $profesor_responsable,
             $fecha_inicio->format('Y-m-d'),
             $fecha_fin->format('Y-m-d'),
             $_POST['hora_inicio'],
             $_POST['hora_fin'],
             $_POST['coste'],
             $_POST['total_alumnos'],
-            $_POST['objetivo']
+            $_POST['objetivo'],
+            $actividad_id
         );
-        if (!$stmt->execute()) {
-            throw new Exception("Error al crear la actividad: " . $stmt->error);
+        if (!$stmt_update->execute()) {
+            throw new Exception("Error al actualizar la actividad: " . $stmt_update->error);
         }
-        $actividad_id = $conn->insert_id;
 
-        // Insertar acompañantes
-        if (!empty($acompanantes)) {
-            $stmt_acomp = $conn->prepare("INSERT INTO acompanante (actividad_id, profesor_id) VALUES (?, ?)");
-            foreach ($acompanantes as $profesor_id) {
-                $stmt_acomp->bind_param("ii", $actividad_id, $profesor_id);
-                $stmt_acomp->execute();
+        // Actualizar acompañantes
+        $conn->query("DELETE FROM acompanante WHERE actividad_id = $actividad_id");
+        $acompanantes_nuevos = isset($_POST['acompanantes']) ? array_map('intval', $_POST['acompanantes']) : [];
+        if (!empty($acompanantes_nuevos)) {
+            $stmt_insert_acomp = $conn->prepare("INSERT INTO acompanante (actividad_id, profesor_id) VALUES (?, ?)");
+            foreach ($acompanantes_nuevos as $profesor_id) {
+                if ($profesor_id === $profesor_responsable) {
+                    continue; // El responsable no puede ser acompañante
+                }
+                $stmt_insert_acomp->bind_param("ii", $actividad_id, $profesor_id);
+                $stmt_insert_acomp->execute();
             }
         }
 
         $conn->commit();
-        $_SESSION['success'] = "Actividad creada correctamente";
+        $_SESSION['success'] = "Actividad actualizada correctamente";
         header("Location: index.php");
         exit;
     } catch (Exception $e) {
         $conn->rollback();
         $error = $e->getMessage();
-    } finally {
-        $conn->close();
     }
 }
+
+// Obtener datos para el formulario
+$departamentos = $conn->query("SELECT * FROM departamento");
+$tipos = $conn->query("SELECT * FROM tipo");
+$horas = $conn->query("SELECT * FROM horas ORDER BY hora");
+
+function getProfesoresByDepartamento($conn, $departamento_id) {
+    $stmt = $conn->prepare("SELECT id, nombre FROM profesores WHERE id_departamento = ?");
+    $stmt->bind_param("i", $departamento_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+$conn->close();
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Actividad</title>
+    <title>✏️ Editar Actividad</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script>
         function cargarProfesores() {
@@ -161,6 +200,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             <label class="form-check-label" for="accompanie-${profesor.id}">${profesor.nombre}</label>
                         `;
                         accompanyDiv.appendChild(checkbox);
+
+                        // Marcar checkboxes de acompañantes actuales
+                        if (<?= json_encode($acompanantes_actuales ?? []) ?>.includes(profesor.id)) {
+                            document.getElementById(`accompanie-${profesor.id}`).checked = true;
+                        }
                     });
                 })
                 .catch(error => console.error('Error al cargar profesores:', error));
@@ -174,7 +218,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
 <div class="container mt-5">
-    <h2>➕ Nueva Actividad</h2>
+    <h2>✏️ Editar Actividad</h2>
     <?php if ($error): ?>
         <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
     <?php endif; ?>
@@ -182,14 +226,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Información Básica -->
         <div class="mb-3">
             <label for="titulo">Título</label>
-            <input type="text" id="titulo" name="titulo" class="form-control" required>
+            <input type="text" id="titulo" name="titulo" class="form-control" value="<?= htmlspecialchars($actividad['titulo']) ?>" required>
         </div>
         <div class="mb-3">
             <label for="tipo_id">Tipo</label>
             <select id="tipo_id" name="tipo_id" class="form-select" required>
-                <option value="">Seleccionar...</option>
                 <?php while ($tipo = $tipos->fetch_assoc()): ?>
-                    <option value="<?= $tipo['id'] ?>"><?= htmlspecialchars($tipo['nombre']) ?></option>
+                    <option value="<?= $tipo['id'] ?>" <?= $tipo['id'] == $actividad['tipo_id'] ? 'selected' : '' ?>>
+                        <?= htmlspecialchars($tipo['nombre']) ?>
+                    </option>
                 <?php endwhile; ?>
             </select>
         </div>
@@ -198,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <select id="departamento_id" name="departamento_id" class="form-select" required onchange="cargarProfesores()">
                 <option value="">Seleccionar...</option>
                 <?php while ($dep = $departamentos->fetch_assoc()): ?>
-                    <option value="<?= $dep['id'] ?>" <?= $selected_departamento_id == $dep['id'] ? 'selected' : '' ?>>
+                    <option value="<?= $dep['id'] ?>" <?= $dep['id'] == $actividad['departamento_id'] ? 'selected' : '' ?>>
                         <?= htmlspecialchars($dep['nombre']) ?>
                     </option>
                 <?php endwhile; ?>
@@ -214,17 +259,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Fechas y Horas -->
         <div class="mb-3">
             <label for="fecha_inicio">Fecha Inicio</label>
-            <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" required>
+            <input type="date" id="fecha_inicio" name="fecha_inicio" class="form-control" value="<?= $actividad['fecha_inicio'] ?>" required>
         </div>
         <div class="mb-3">
             <label for="fecha_fin">Fecha Fin</label>
-            <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" required>
+            <input type="date" id="fecha_fin" name="fecha_fin" class="form-control" value="<?= $actividad['fecha_fin'] ?>" required>
         </div>
         <div class="mb-3">
             <label for="hora_inicio">Hora Inicio</label>
             <select id="hora_inicio" name="hora_inicio" class="form-select" required>
                 <?php $horas->data_seek(0); while ($hora = $horas->fetch_assoc()): ?>
-                    <option value="<?= $hora['id'] ?>">
+                    <option value="<?= $hora['id'] ?>" <?= $hora['id'] == $actividad['hora_inicio_id'] ? 'selected' : '' ?>>
                         <?= date('H:i', strtotime($hora['hora'])) ?>
                     </option>
                 <?php endwhile; ?>
@@ -234,7 +279,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label for="hora_fin">Hora Fin</label>
             <select id="hora_fin" name="hora_fin" class="form-select" required>
                 <?php $horas->data_seek(0); while ($hora = $horas->fetch_assoc()): ?>
-                    <option value="<?= $hora['id'] ?>">
+                    <option value="<?= $hora['id'] ?>" <?= $hora['id'] == $actividad['hora_fin_id'] ? 'selected' : '' ?>>
                         <?= date('H:i', strtotime($hora['hora'])) ?>
                     </option>
                 <?php endwhile; ?>
@@ -244,21 +289,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <!-- Detalles -->
         <div class="mb-3">
             <label for="coste">Coste (€)</label>
-            <input type="text" id="coste" name="coste" class="form-control" oninput="validateNumericInput(event)" required>
+            <input type="text" id="coste" name="coste" class="form-control" value="<?= $actividad['coste'] ?>" oninput="validateNumericInput(event)" required>
         </div>
         <div class="mb-3">
             <label for="total_alumnos">Alumnos</label>
-            <input type="text" id="total_alumnos" name="total_alumnos" class="form-control" oninput="validateNumericInput(event)" required>
+            <input type="text" id="total_alumnos" name="total_alumnos" class="form-control" value="<?= $actividad['total_alumnos'] ?>" oninput="validateNumericInput(event)" required>
         </div>
         <div class="mb-3">
             <label for="objetivo">Objetivo</label>
-            <textarea id="objetivo" name="objetivo" class="form-control" rows="3" required></textarea>
+            <textarea id="objetivo" name="objetivo" class="form-control" rows="3" required><?= htmlspecialchars($actividad['objetivo']) ?></textarea>
         </div>
         <div class="mb-3">
             <label>Acompañantes</label>
             <div id="acompany-div"></div>
         </div>
-        <button class="btn btn-primary">Guardar Actividad</button>
+        <button class="btn btn-primary">Guardar Cambios</button>
+        <a href="index.php" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -292,6 +338,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         return true;
     }
+
+    // Cargar profesores al cargar la página
+    window.onload = function () {
+        const departamentoId = <?= $actividad['departamento_id'] ?>;
+        if (departamentoId) {
+            cargarProfesores(departamentoId);
+        }
+    };
 </script>
 </body>
 </html>
